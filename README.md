@@ -1,4 +1,4 @@
-init.lua:                neovim config file, includes semimak -> qwerty langmap
+save init.lua:                neovim config file, includes semimak -> qwerty langmap
 
 keen init.lua:           neovim config file, includes canary -> qwerty langmap
 
