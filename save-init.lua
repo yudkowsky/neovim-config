@@ -1,6 +1,13 @@
+-- basic settings
+vim.cmd('syntax enable')
 vim.opt.number = true
 vim.opt.relativenumber = true
+vim.opt.smartindent = true
+vim.opt.tabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.expandtab = true
 
+-- keymaps
 vim.opt.langmap = [[fq,FQ,lw,LW,he,HE,vr,VR,zt,ZT,qy,QY,wu,WU,ui,UI,yp,YP,sa,SA,rs,RS,nd,ND,tf,TF,kg,KG,ch,CH,dj,DJ,ek,EK,al,AL,xz,XZ,bc,BC,mv,MV,jb,JB,pn,PN,gm,GM,i\;,I\:,\;',\:",\'x,\"X]]
 
 vim.keymap.set('n', '<C-f>', '<C-q>', { noremap = true, silent = true})
@@ -40,5 +47,22 @@ vim.keymap.set('n', '<CR>', 'o<Esc>', { noremap = true, silent = true})
 
 
 
+-- Bootstrap lazy.nvim
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+vim.opt.rtp:prepend(lazypath)
 
-
+-- Setup plugins
+require("lazy").setup({
+    -- Theme
+    {
+        "navarasu/onedark.nvim",
+        lazy = false,
+        priority = 1000,
+        config = function()
+            require('onedark').setup {
+                style = 'dark'
+            }
+            vim.cmd('colorscheme onedark')
+        end,
+    },
+})
