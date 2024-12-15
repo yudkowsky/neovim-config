@@ -86,24 +86,45 @@ vim.keymap.set('n', '<A-x>', '<C-d>', { noremap = true, silent = true})
 vim.keymap.set('i', '<A-s>', '<Esc> <C-u>', { noremap = true, silent = true})
 vim.keymap.set('i', '<A-x>', '<Esc> <C-d>', { noremap = true, silent = true})
 
+-- tab fix?
+vim.api.nvim_set_keymap('i', '<Tab>', '<C-v><Tab>', { noremap = true, silent = true })
+
+
 -- bootstrap lazy.nvim
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 vim.opt.rtp:prepend(lazypath)
+
+
+vim.opt.cursorline = true
+
 
 -- setup plugins
 require("lazy").setup({
     -- theme
     {
-        "navarasu/onedark.nvim",
-        lazy = false,
-        priority = 1000,
+    "rktjmp/lush.nvim", -- Dependency for the Substrata theme
+    lazy = true,
+	},
+	{
+    	    "kvrohit/substrata.nvim",
+    	    priority = 1000,
+    	    config = function()
+            vim.cmd("colorscheme substrata")
+    	    end,
+	},
+
+    {
+        'windwp/nvim-autopairs',
         config = function()
-            require('onedark').setup {
-                style = 'dark'
-            }
-            vim.cmd('colorscheme onedark')
+            require('nvim-autopairs').setup({
+                check_ts = true, -- Enable Treesitter integration
+                disable_filetype = { "TelescopePrompt", "vim" }, -- Optional: disable in specific file types
+            })
         end,
     },
+
+
+
 
     {
         "neovim/nvim-lspconfig",
@@ -125,6 +146,7 @@ require("lazy").setup({
         },
     },
 
+--[[
     {
     "nvim-tree/nvim-tree.lua",
     dependencies = {
@@ -149,7 +171,38 @@ require("lazy").setup({
             vim.keymap.set('n', '<C-g>', ':NvimTreeToggle<CR>', { silent = true })
         end,
     }
+]]--
+
 })
+
+
+
+
+
+
+vim.api.nvim_set_hl(0, "TODO", { fg = "#81245D", underline = true, bold = true }) -- Dark Magenta with underline and bold
+
+
+vim.api.nvim_set_hl(0, "Comment", { fg = "#808080", italic = false })
+
+
+
+
+
+
+require('nvim-autopairs').setup({
+    check_ts = true, -- Enable Treesitter integration
+    disable_filetype = { "TelescopePrompt", "vim" }, -- Disable in specific file types
+})
+
+
+
+
+
+
+
+
+
 
 require("mason").setup()
 require("mason-lspconfig").setup({
@@ -168,9 +221,52 @@ require("lspconfig").clangd.setup({
         "--clang-tidy",
         "--header-insertion=iwyu",
     },
+    init_options = {
+        diagnostics = {
+            suppress = {
+                "unknown-type-name",
+                "unknown-type",
+                "expected-expression",
+                "typedef-redefinition"
+            }
+        },
+        clangd = {
+            diagnostics = {
+                disabled = {
+                    "unknown-type-name",
+                    "expected-expression"
+                }
+            }
+        }
+    }
 })
 
+
+-- Toggle diagnostics function
+vim.diagnostic.diagnostics_active = true  -- Initial state
+function _G.toggle_diagnostics()
+    if vim.diagnostic.diagnostics_active then
+        vim.diagnostic.disable()
+        vim.diagnostic.diagnostics_active = false
+        print("Diagnostics disabled")
+    else
+        vim.diagnostic.enable()
+        vim.diagnostic.diagnostics_active = true
+        print("Diagnostics enabled")
+    end
+end
+
+
+
+
+-- Key mapping using Alt+E
+vim.keymap.set('n', '<A-e>', ':lua toggle_diagnostics()<CR>', { silent = true })
+
+
 vim.g.cmp_enabled = true
+vim.g.cmp_enabled = true
+
+--[[
 
 -- setup nvim-cmp for autocompletion
 local cmp = require('cmp')
@@ -199,8 +295,14 @@ cmp.setup({
     })
 })
 
+]]--
+
+--[[
+
 -- create a toggle for code completion
 vim.keymap.set('n', '<A-z>', function()
     vim.g.cmp_enabled = not vim.g.cmp_enabled
     print("Completion " .. (vim.g.cmp_enabled and "ON" or "OFF"))
 end, { silent = false })
+
+]]--
