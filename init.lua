@@ -8,9 +8,30 @@ vim.opt.expandtab = true
 vim.opt.tabstop = 4
 vim.opt.softtabstop = 0
 vim.opt.cursorline = true
--- vim.opt.smarttab = false
+-- vim.opt.smarttab = false -- enable for tabs being deleted one space at a time
+vim.opt.splitkeep = 'screen'
+
+-- fix slow treesitter thing
+vim.g._ts_force_sync_parsing = true
+
+-- compile automatically
+vim.opt.makeprg = '.\\build_cereus.bat'
+vim.opt.shellpipe = '>%s 2>&1'
 
 vim.highlight.priorities.semantic_tokens = 95;
+
+-- compile / error hotkeys in jai
+vim.api.nvim_create_autocmd('FileType', {
+    pattern = 'jai',
+    callback = function()
+        vim.opt_local.makeprg = 'cd /d %:p:h && jai %:t'
+    end,
+})
+
+-- compile / error hotkeys in C
+vim.keymap.set('n', '<A-m>', '<cmd>w<CR><cmd>Make<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<A-j>', '<cmd>cnext<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<A-k>', '<cmd>cprev<CR>', { noremap = true, silent = true })
 
 -- keymaps
 vim.opt.langmap = [[fq,FQ,lw,LW,he,HE,vr,VR,zt,ZT,qy,QY,wu,WU,ui,UI,yp,YP,sa,SA,rs,RS,nd,ND,tf,TF,kg,KG,ch,CH,dj,DJ,ek,EK,al,AL,xz,XZ,bc,BC,mv,MV,jb,JB,pn,PN,gm,GM,i\;,I\:,\;',\:",\'x,\"X]]
@@ -94,6 +115,9 @@ vim.keymap.set('i', '<A-x>', '<Esc> <C-d>', { noremap = true, silent = true})
 -- overwrite U -> ^R for undo
 vim.keymap.set('n', 'U', '<C-r>', { noremap = true, silent = true})
 
+-- add alt h for :noh
+vim.keymap.set('n', '<A-h>', '<cmd>nohlsearch<CR>', { noremap = true, silent = true})
+
 -- bootstrap lazy.nvim
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 vim.opt.rtp:prepend(lazypath)
@@ -144,17 +168,18 @@ require('lazy').setup({
                     ['@boolean'] = { fg = 'text' },
                     ['@variable.parameter'] = { fg = 'text' },
                     ['@keyword.operator'] = { fg = 'text' },
+                    ['@keyword.conditional.ternary'] = { fg = 'text' },
 
                     ['@type.builtin'] = { fg = 'foam' },
                     ['@string.escape'] = { fg = 'foam' },
                     ['@constant'] = { fg = 'foam' },
+                    ['@constant.builtin'] = { fg = 'foam' },
 
                     ['@string'] = { fg = 'pine' },
                     ['@character'] = { fg = 'pine' },
 
                     ['@comment.todo'] = { fg = 'pine', underline = true, bold = true, bg = 'base' },
                     ['@comment.note'] = { fg = 'pine', underline = true, bold = true, bg = 'base' },
-                    
                 },
             })
             vim.cmd.colorscheme('rose-pine-moon')
@@ -170,6 +195,7 @@ require('lazy').setup({
             'hrsh7th/cmp-path',
             'L3MON4D3/LuaSnip',
             'saadparwaiz1/cmp_luasnip',
+            'tpope/vim-dispatch',
         },
     },
 
@@ -252,5 +278,5 @@ vim.api.nvim_create_autocmd('FileType', {
     end,
 })
 
-vim.filetype.add({ extension = { jai = 'jai' } })
+vim.filetype.add({ extension = { jai = 'jai', h = 'c' } })
 vim.treesitter.language.register('jai', 'jai')
