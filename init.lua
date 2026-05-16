@@ -14,17 +14,13 @@ vim.opt.splitkeep = 'screen'
 -- fix slow treesitter thing
 vim.g._ts_force_sync_parsing = true
 
--- compile automatically
-vim.opt.makeprg = '.\\build_cereus.bat'
-vim.opt.shellpipe = '>%s 2>&1'
-
 vim.highlight.priorities.semantic_tokens = 95;
 
 -- compile / error hotkeys in jai
 vim.api.nvim_create_autocmd('FileType', {
     pattern = 'jai',
     callback = function()
-        vim.opt_local.makeprg = 'cd /d %:p:h && jai %:t'
+        vim.opt_local.makeprg = 'cd /d %:p:h && jai %:t -x64'
     end,
 })
 
@@ -206,6 +202,41 @@ require('lazy').setup({
     },
 })
 
+-- compile automatically
+
+local function find_build_script()
+    local current = vim.fn.expand('%:p:h')
+    while current and current ~= '' do
+        local code_dir = current .. '\\code'
+        if vim.fn.isdirectory(code_dir) == 1 then
+            local bats = vim.fn.glob(code_dir .. '\\*.bat', false, true)
+            if #bats > 0 then
+                return bats[1]
+            end
+        end
+        local parent = vim.fn.fnamemodify(current, ':h')
+        if parent == current then break end -- reached root
+        current = parent
+    end
+    return nil
+end
+
+local function set_makeprg()
+    local script = find_build_script()
+    if script then
+        local script_dir = vim.fn.fnamemodify(script, ':h')
+        vim.opt_local.makeprg = 'cd /d ' .. script_dir .. ' && ' .. script
+    end
+end
+
+vim.opt.shellpipe = '>%s 2>&1'
+
+-- set makeprg
+vim.api.nvim_create_autocmd('FileType', {
+    pattern = { 'c', 'glsl' },
+    callback = set_makeprg,
+})
+
 -- lsp
 vim.lsp.config('clangd', {
     capabilities = require('cmp_nvim_lsp').default_capabilities(),
@@ -272,7 +303,7 @@ vim.api.nvim_create_autocmd('ColorScheme', {
 })
 
 vim.api.nvim_create_autocmd('FileType', {
-    pattern = { 'c', 'jai' },
+    pattern = { 'c', 'jai', 'glsl' },
     callback = function()
         vim.treesitter.start()
     end,
